@@ -1,0 +1,11 @@
+Domain,Is Alive,Average RTT (ms),"Packet Loss (%), jitter (ms)"
+google.com,True,126.773,0.0,5.296999999999997
+youtube.com,True,129.542,0.1,14.507000000000005
+wikipedia.org,True,132.508,0.0,52.39200000000001
+openai.com,True,129.327,0.0,12.37899999999999
+github.com,True,133.118,0.0,13.338999999999984
+store.steampowered.com,True,127.983,0.0,10.25099999999999
+apple.com,True,127.368,0.0,15.048000000000002
+wildberries.com,True,130.901,0.0,16.72200000000001
+ozon.com,True,223.085,0.0,80.64599999999999
+yandex.ru,True,167.659,0.0,21.436000000000007
