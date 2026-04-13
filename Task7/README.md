@@ -1,51 +1,90 @@
 # Task7
 
-В задании нужно сделать редирект для клиентов с российским IP на уровне сервера.
+В этом задании редирект для российских IP реализован на уровне сервера через `nginx`.
 
-Для решения использованы:
-
-- `nginx` как сервер перед приложением
-- `geo` в конфигурации `nginx`
-- файл `ru-aggregated.zone` со списком российских CIDR-подсетей
-- статическая заглушка `denied.html`
-
-Логика работы такая:
+Логика:
 
 - `nginx` принимает запрос
 - проверяет IP клиента по списку российских подсетей
 - если IP попадает под блокировку, делает редирект на `/denied.html`
-- если не попадает, проксирует запрос в `task5-app`
+- если не попадает, проксирует запрос в приложение
 
-Приложение при этом не меняется, вся проверка выполняется на сервере.
 
-## Проверка
+## Запуск
 
-Перед проверкой должны быть запущены:
+Все команды выполнять из папки `Task7`.
 
-- `task5-db`
-- `task5-app`
-
-Если они не запущены:
+### 1. Создать сеть
 
 ```bash
-docker start task5-db task5-app
+docker network create task7-network
 ```
 
-Сборка и запуск `nginx`:
+### 2. Запустить PostgreSQL
+
+```bash
+docker run -d \
+  --name task7-db \
+  --network task7-network \
+  -e POSTGRES_DB=parser_db \
+  -e POSTGRES_USER=parser_user \
+  -e POSTGRES_PASSWORD=parser_password \
+  -p 5432:5432 \
+  postgres:16
+```
+
+### 3. Собрать образ приложения
+
+```bash
+docker build -f Dockerfile.app -t task7-app .
+```
+
+### 4. Запустить приложение
+
+```bash
+docker run -d \
+  --name task7-app \
+  --network task7-network \
+  -e DB_NAME=parser_db \
+  -e DB_USER=parser_user \
+  -e DB_PASSWORD=parser_password \
+  -e DB_HOST=task7-db \
+  -e DB_PORT=5432 \
+  -p 8001:8001 \
+  task7-app
+```
+
+### 5. Собрать образ nginx
 
 ```bash
 docker build -t task7-nginx .
-docker rm -f task5-nginx
-docker run -d --name task5-nginx --network task5-network -p 80:80 task7-nginx
 ```
 
-Проверка контейнеров:
+### 6. Запустить nginx
+
+```bash
+docker run -d \
+  --name task7-nginx \
+  --network task7-network \
+  -p 80:80 \
+  task7-nginx
+```
+
+## Проверка
+
+Проверить контейнеры:
 
 ```bash
 docker ps
 ```
 
-Проверка в браузере:
+Проверить приложение:
+
+```text
+http://127.0.0.1:8001/docs
+```
+
+Проверить задачу:
 
 ```text
 http://127.0.0.1/
@@ -53,11 +92,25 @@ http://127.0.0.1/
 
 Ожидаемое поведение:
 
-- если IP попадает под блокировку, открывается заглушка `Вам сюда нельзя`
+- если IP попадает под блокировку, открывается `denied.html`
 - если IP не попадает под блокировку, запрос уходит в приложение
 
-Проверка логов:
+## Полезные команды
+
+Логи nginx:
 
 ```bash
-docker logs task5-nginx
+docker logs task7-nginx
+```
+
+Логи приложения:
+
+```bash
+docker logs task7-app
+```
+
+Логи базы:
+
+```bash
+docker logs task7-db
 ```
