@@ -1,0 +1,5 @@
+google.com
+github.com
+vk.com
+ozon.ru
+wildberries.ru
