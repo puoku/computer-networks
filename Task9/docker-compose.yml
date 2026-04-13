@@ -1,0 +1,33 @@
+services:
+  server:
+    build:
+      context: ./server
+    container_name: task9-server
+    networks:
+      lab_net:
+        ipv4_address: 172.30.0.10
+        ipv6_address: fd00:1234::10
+
+  client:
+    build:
+      context: ./client
+    container_name: task9-client
+    command: sleep infinity
+    tty: true
+    stdin_open: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      lab_net:
+        ipv4_address: 172.30.0.20
+        ipv6_address: fd00:1234::20
+
+networks:
+  lab_net:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+        - subnet: fd00:1234::/64
